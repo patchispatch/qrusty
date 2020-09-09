@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{OpenOptions};
+use std::fs::{OpenOptions, File, read_to_string};
 use std::io::{Write, Read, BufRead, BufReader};
 
 // q directory
@@ -14,7 +14,7 @@ fn main() {
     // First argument is saved into the queue
     if let Some(mut arg) = args.next() {
         // Open q file
-        arg.push_str("\n");
+        arg = arg + "\n";
 
         let mut q = OpenOptions::new().create(true).write(true).append(true).open(Q_PATH).expect("Open failed");
         q.write_all(arg.as_bytes()).expect("Write failed");
@@ -22,17 +22,17 @@ fn main() {
         println!("'{}' pushed successfully into q.", arg);
     }
     else {
-        let mut q = OpenOptions::new().read(true).write(true).append(false).open(Q_PATH).expect("Open failed");
+        let mut q = OpenOptions::new().read(true).write(true).open(Q_PATH).expect("Open failed");
 
         // Pick line
         let line = BufReader::new(&q).lines().next().unwrap().expect("Reading failed");
         println!("{}", line);
 
         // Remove line
-        let mut content = String::new();
+        let mut content = read_to_string(Q_PATH).expect("Error opening q");
         q.read_to_string(&mut content).expect("Error reading q.");
-        let content = content.replacen(line.as_str(), "", 1);
-        println!("{}", content);
+        let content = content.replacen((line + "\n").as_str(), "", 1);
+        let mut q = File::create(Q_PATH).expect("Creation failed");
         q.write_all(content.as_bytes()).unwrap();
     }
 }
