@@ -7,7 +7,7 @@ static Q_PATH: &str = "./q.txt";
 
 fn main() {
     let mut args = env::args();
-    
+
     // Ignore first argument (binary name)
     args.next();
 
