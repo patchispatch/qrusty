@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, process::exit};
 use std::fs::{OpenOptions, File, read_to_string};
 use std::io::{Write, Read, BufRead, BufReader};
 
@@ -16,23 +16,31 @@ fn main() {
         // Open q file
         arg = arg + "\n";
 
-        let mut q = OpenOptions::new().create(true).write(true).append(true).open(Q_PATH).expect("Open failed");
-        q.write_all(arg.as_bytes()).expect("Write failed");
-
-        println!("'{}' pushed successfully into q.", arg);
+        if let Ok(mut q) = OpenOptions::new().create(true).write(true).append(true).open(Q_PATH) {
+            q.write_all(arg.as_bytes()).expect("Write failed");
+            println!("'{}' pushed successfully into q.", arg);
+        }
+        else {
+            println!("The queue could not be opened.");
+            exit(1);
+        }
     }
     else {
-        let mut q = OpenOptions::new().read(true).write(true).open(Q_PATH).expect("Open failed");
+        if let Ok(mut q) = OpenOptions::new().read(true).write(true).open(Q_PATH) {
+            // Pick line
+            let line = BufReader::new(&q).lines().next().unwrap().expect("Reading failed");
+            println!("{}", line);
 
-        // Pick line
-        let line = BufReader::new(&q).lines().next().unwrap().expect("Reading failed");
-        println!("{}", line);
-
-        // Remove line
-        let mut content = read_to_string(Q_PATH).expect("Error opening q");
-        q.read_to_string(&mut content).expect("Error reading q.");
-        let content = content.replacen((line + "\n").as_str(), "", 1);
-        let mut q = File::create(Q_PATH).expect("Creation failed");
-        q.write_all(content.as_bytes()).unwrap();
+            // Remove line
+            let mut content = read_to_string(Q_PATH).expect("Error opening q");
+            q.read_to_string(&mut content).expect("Error reading q.");
+            let content = content.replacen((line + "\n").as_str(), "", 1);
+            let mut q = File::create(Q_PATH).expect("Creation failed");
+            q.write_all(content.as_bytes()).unwrap();
+        }
+        else {
+            println!("The queue could not be opened.");
+            exit(1);
+        }
     }
 }
