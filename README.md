@@ -1,6 +1,8 @@
 # Qrusty
 
-A try on re-implementing fdavidcl's q in Rust for learning purposes, with added functionalities.
+![](pics/krusty.jpg)
+
+An attemp on re-implementing [fdavidcl's q](https://github.com/fdavidcl/q) in Rust for learning purposes, with added functionalities.
 
 ## What's this?
 
